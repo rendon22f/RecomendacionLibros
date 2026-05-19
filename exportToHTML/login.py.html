@@ -1,0 +1,91 @@
+<html>
+<head>
+<title>login.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #7a7e85;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#191a1c">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+login.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">mysql</span><span class="s2">.</span><span class="s1">connector</span>
+<span class="s0">import </span><span class="s1">random</span>
+
+<span class="s3"># 🔹 Conexión</span>
+<span class="s1">conexion </span><span class="s2">= </span><span class="s1">mysql</span><span class="s2">.</span><span class="s1">connector</span><span class="s2">.</span><span class="s1">connect</span><span class="s2">(</span>
+    <span class="s1">host</span><span class="s2">=</span><span class="s4">&quot;localhost&quot;</span><span class="s2">,</span>
+    <span class="s1">user</span><span class="s2">=</span><span class="s4">&quot;root&quot;</span><span class="s2">,</span>
+    <span class="s1">password</span><span class="s2">=</span><span class="s4">&quot;&quot;</span><span class="s2">,</span>
+    <span class="s1">database</span><span class="s2">=</span><span class="s4">&quot;recomendacion&quot;</span><span class="s2">,</span>
+    <span class="s1">charset</span><span class="s2">=</span><span class="s4">&quot;utf8&quot;</span>
+<span class="s2">)</span>
+
+<span class="s1">cursor </span><span class="s2">= </span><span class="s1">conexion</span><span class="s2">.</span><span class="s1">cursor</span><span class="s2">()</span>
+
+<span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;=== SISTEMA DE LOGIN (escribe 'exit' para salir) ===&quot;</span><span class="s2">)</span>
+
+<span class="s0">while True</span><span class="s2">:</span>
+    <span class="s1">username </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span><span class="s4">&quot;</span><span class="s0">\n</span><span class="s4">Ingresa tu usuario: &quot;</span><span class="s2">)</span>
+
+    <span class="s0">if </span><span class="s1">username</span><span class="s2">.</span><span class="s1">lower</span><span class="s2">() == </span><span class="s4">&quot;exit&quot;</span><span class="s2">:</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Saliendo del sistema...&quot;</span><span class="s2">)</span>
+        <span class="s0">break</span>
+
+    <span class="s1">password </span><span class="s2">= </span><span class="s1">input</span><span class="s2">(</span><span class="s4">&quot;Ingresa tu contraseña: &quot;</span><span class="s2">)</span>
+
+    <span class="s3">#  Login</span>
+    <span class="s1">sql </span><span class="s2">= </span><span class="s4">&quot;SELECT * FROM usuario WHERE username = %s AND contraseña = %s&quot;</span>
+    <span class="s1">cursor</span><span class="s2">.</span><span class="s1">execute</span><span class="s2">(</span><span class="s1">sql</span><span class="s2">, (</span><span class="s1">username</span><span class="s2">, </span><span class="s1">password</span><span class="s2">))</span>
+    <span class="s1">resultado </span><span class="s2">= </span><span class="s1">cursor</span><span class="s2">.</span><span class="s1">fetchone</span><span class="s2">()</span>
+
+    <span class="s0">if </span><span class="s1">resultado</span><span class="s2">:</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Login correcto&quot;</span><span class="s2">)</span>
+
+        <span class="s1">tipo </span><span class="s2">= </span><span class="s1">resultado</span><span class="s2">[</span><span class="s5">3</span><span class="s2">]</span>
+
+
+        <span class="s0">if </span><span class="s1">tipo </span><span class="s2">== </span><span class="s5">1</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;</span><span class="s0">\n</span><span class="s4">PANEL ADMIN - TODOS LOS LIBROS</span><span class="s0">\n</span><span class="s4">&quot;</span><span class="s2">)</span>
+
+            <span class="s1">cursor</span><span class="s2">.</span><span class="s1">execute</span><span class="s2">(</span><span class="s4">&quot;SELECT id_libro, nombre, autor FROM libros&quot;</span><span class="s2">)</span>
+            <span class="s1">libros </span><span class="s2">= </span><span class="s1">cursor</span><span class="s2">.</span><span class="s1">fetchall</span><span class="s2">()</span>
+
+            <span class="s0">for </span><span class="s1">libro </span><span class="s0">in </span><span class="s1">libros</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s4">f&quot;ID: </span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]</span><span class="s0">} </span><span class="s4">| </span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]</span><span class="s0">} </span><span class="s4">- </span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s2">)</span>
+
+
+        <span class="s0">elif </span><span class="s1">tipo </span><span class="s2">== </span><span class="s5">2</span><span class="s2">:</span>
+            <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;</span><span class="s0">\n </span><span class="s4">PANEL USER - LIBROS ALEATORIOS</span><span class="s0">\n</span><span class="s4">&quot;</span><span class="s2">)</span>
+
+            <span class="s1">cursor</span><span class="s2">.</span><span class="s1">execute</span><span class="s2">(</span><span class="s4">&quot;SELECT id_libro, nombre, autor FROM libros&quot;</span><span class="s2">)</span>
+            <span class="s1">libros </span><span class="s2">= </span><span class="s1">cursor</span><span class="s2">.</span><span class="s1">fetchall</span><span class="s2">()</span>
+
+            <span class="s0">if </span><span class="s1">len</span><span class="s2">(</span><span class="s1">libros</span><span class="s2">) == </span><span class="s5">0</span><span class="s2">:</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot; No hay libros en la base de datos&quot;</span><span class="s2">)</span>
+                <span class="s0">continue</span>
+
+            <span class="s1">cantidad </span><span class="s2">= </span><span class="s1">min</span><span class="s2">(</span><span class="s5">5</span><span class="s2">, </span><span class="s1">len</span><span class="s2">(</span><span class="s1">libros</span><span class="s2">))</span>
+            <span class="s1">seleccion </span><span class="s2">= </span><span class="s1">random</span><span class="s2">.</span><span class="s1">sample</span><span class="s2">(</span><span class="s1">libros</span><span class="s2">, </span><span class="s1">cantidad</span><span class="s2">)</span>
+
+            <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Libros recomendados:</span><span class="s0">\n</span><span class="s4">&quot;</span><span class="s2">)</span>
+
+            <span class="s0">for </span><span class="s1">i</span><span class="s2">, </span><span class="s1">libro </span><span class="s0">in </span><span class="s1">enumerate</span><span class="s2">(</span><span class="s1">seleccion</span><span class="s2">, </span><span class="s1">start</span><span class="s2">=</span><span class="s5">1</span><span class="s2">):</span>
+                <span class="s1">print</span><span class="s2">(</span><span class="s4">f&quot;</span><span class="s0">{</span><span class="s1">i</span><span class="s0">}</span><span class="s4">. </span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">1</span><span class="s2">]</span><span class="s0">} </span><span class="s4">- </span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">2</span><span class="s2">]</span><span class="s0">} </span><span class="s4">(ID:</span><span class="s0">{</span><span class="s1">libro</span><span class="s2">[</span><span class="s5">0</span><span class="s2">]</span><span class="s0">}</span><span class="s4">)&quot;</span><span class="s2">)</span>
+
+    <span class="s0">else</span><span class="s2">:</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Usuario o contraseña incorrectos&quot;</span><span class="s2">)</span>
+
+<span class="s3"># 🔹 Cerrar conexión</span>
+<span class="s1">cursor</span><span class="s2">.</span><span class="s1">close</span><span class="s2">()</span>
+<span class="s1">conexion</span><span class="s2">.</span><span class="s1">close</span><span class="s2">()</span></pre>
+</body>
+</html>
