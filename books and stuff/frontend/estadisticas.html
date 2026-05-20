@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Métricas de Sistema</title>
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* Fijación del fondo adaptativo de la interfaz */
+    body::before {
+      position: fixed !important;
+      height: 100vh !important;
+    }
+    /* Contenedores traslúcidos para la visualización de los gráficos */
+    .chart-container {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    h4 {
+      color: #ffeb3b;
+      margin-bottom: 12px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 6px;
+    }
+    th, td {
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper" style="width: 850px; text-align: left; color: white;">
+    <h2 style="text-align: center;"> Reporte de Estadísticas </h2>
+    <br>
+
+    <div id="total-usuarios-box" style="font-size:16px; margin-bottom:15px; text-align: center; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px;">
+        Procesando DataFrames de Pandas...
+    </div>
+
+    <div id="modulo-scroll-estadisticas" style="max-height: 440px; overflow-y: auto; padding-right: 8px;">
+
+        <div style="display: flex; gap: 15px;">
+            <div class="chart-container" style="width: 55%;">
+                <h4> Top 5 Libros mejor calificados</h4>
+                <canvas id="graficaLibros"></canvas>
+            </div>
+            <div class="chart-container" style="width: 45%;">
+                <h4> Géneros Más Preferidos </h4>
+                <canvas id="graficaGeneros"></canvas>
+            </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+
+            <h4 style="color: #ffeb3b; text-align: left;"> Desglose: Top 5 Libros Meritorios</h4>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 25px; font-size: 14px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid white; text-align: left;">
+                        <th>Título del Libro</th>
+                        <th>Autor</th>
+                        <th>Evaluación</th>
+                        <th>Muestra de Votos</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-libros-body"></tbody>
+            </table>
+
+            <h4 style="color: #ffeb3b; text-align: left;"> Desglose: Popularidad de Géneros Literarios</h4>
+            <table style="width:100%; border-collapse: collapse; margin-bottom: 25px; font-size: 14px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid white; text-align: left;">
+                        <th>Género Literario</th>
+                        <th>Calificaciones Totales</th>
+                        <th>Calificación Promedio</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-generos-body"></tbody>
+            </table>
+
+            <h4 style="color: #ffeb3b; text-align: left;"> Desglose: Historial de Actividad por Cuenta</h4>
+            <table style="width:100%; border-collapse: collapse; font-size: 14px; margin-bottom: 10px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid white; text-align: left;">
+                        <th>Nombre de la Cuenta</th>
+                        <th>Libros Calificados Totales</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-usuarios-body"></tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <br>
+    <button type="button" onclick="window.location.href='admin.html'" style="width: 100%; background: none; color: white; border: 1px solid white;">Volver al Panel</button>
+  </div>
+
+  <script>
+    // Función encargada de consumir los servicios de la API y renderizar el Dashboard
+    function cargarDashboardCompleto() {
+        fetch("http://127.0.0.1:8000/books/stats")
+            .then(res => res.json())
+            .then(data => {
+                // Renderizado del indicador global de la plataforma
+                document.getElementById("total-usuarios-box").innerHTML = `<strong>Volumen de Usuarios Activos:</strong> ${data.total_usuarios_activos} perfiles registrados`;
+
+
+                // Procesamiento de datos para la tabla de libros
+                const tablaLibros = document.getElementById("tabla-libros-body");
+                tablaLibros.innerHTML = "";
+                data.top_5_libros.forEach(lib => {
+                    tablaLibros.innerHTML += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td>${lib.titulo}</td>
+                            <td>${lib.autor}</td>
+                            <td>⭐ ${lib.calificacion_promedio.toFixed(1)}</td>
+                            <td>${lib.total_votos} evaluaciones</td>
+                        </tr>`;
+                });
+
+
+                const tablaGeneros = document.getElementById("tabla-generos-body");
+                tablaGeneros.innerHTML = "";
+                data.generos_preferidos.forEach(g => {
+                    tablaGeneros.innerHTML += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td><strong>${g.genero}</strong></td>
+                            <td>${g.total_calificaciones} interacciones</td>
+                            <td>⭐ ${g.calificacion_media.toFixed(1)}</td>
+                        </tr>`;
+                });
+
+
+                const tablaUsuarios = document.getElementById("tabla-usuarios-body");
+                tablaUsuarios.innerHTML = "";
+                data.actividad_por_usuario.forEach(u => {
+                    tablaUsuarios.innerHTML += `
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <td>${u.username}</td>
+                            <td>${u.libros_calificados} registros</td>
+                        </tr>`;
+                });
+
+
+
+                // Gráfica de barras horizontales para el Top de Libros
+                const titulosLibros = data.top_5_libros.map(lib => lib.titulo);
+                const calificacionesLibros = data.top_5_libros.map(lib => lib.calificacion_promedio);
+
+                new Chart(document.getElementById('graficaLibros'), {
+                    type: 'bar',
+                    data: {
+                        labels: titulosLibros,
+                        datasets: [{
+                            data: calificacionesLibros,
+                            backgroundColor: 'rgba(255, 235, 59, 0.7)',
+                            borderColor: 'rgba(255, 235, 59, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // Inversión de ejes para mejorar la legibilidad de títulos largos
+                        scales: {
+                            x: { min: 0, max: 5, grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { color: '#fff' } },
+                            y: { grid: { display: false }, ticks: { color: '#fff', font: { size: 10 } } }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // Gráfica circular/dona para la distribución de géneros preferidos
+                const nombresGeneros = data.generos_preferidos.map(g => g.genero);
+                const votosGeneros = data.generos_preferidos.map(g => g.total_calificaciones);
+
+                new Chart(document.getElementById('graficaGeneros'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: nombresGeneros,
+                        datasets: [{
+                            data: votosGeneros,
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.7)',
+                                'rgba(255, 159, 64, 0.7)',
+                                'rgba(153, 102, 255, 0.7)',
+                                'rgba(54, 162, 235, 0.7)',
+                                'rgba(255, 99, 132, 0.7)',
+                                'rgba(231, 76, 60, 0.7)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#fff', boxWidth: 10, font: { size: 11 } } }
+                        }
+                    }
+                });
+
+            })
+            .catch((err) => {
+                console.error(err);
+                document.getElementById("total-usuarios-box").innerHTML = "<span style='color:#ff6b6b;'>Error de sincronización con el backend analítico.</span>";
+            });
+    }
+
+
+    window.onload = cargarDashboardCompleto;
+  </script>
+</body>
+</html>
